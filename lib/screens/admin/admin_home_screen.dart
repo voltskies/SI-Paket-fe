@@ -215,10 +215,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             icon: Icon(Icons.local_shipping_outlined),
             label: 'Kurir',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Akun',
-          ),
         ],
       ),
     );
@@ -303,79 +299,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             }),
           ],
         );
-      case 3:
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Akun Petugas Gudang',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceGray,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 26,
-                      backgroundColor: AppColors.navyPrimary,
-                      child: Icon(
-                        Icons.warehouse,
-                        color: AppColors.yellowAccent,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _adminNama,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const Text(
-                          'Role: PetugasGudang',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: _logout,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade700,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  icon: const Icon(Icons.logout),
-                  label: const Text(
-                    'Keluar / Logout',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
       default:
         return SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -417,12 +340,22 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       ),
                     ],
                   ),
-                  IconButton(
-                    onPressed: _loadData,
-                    icon: const Icon(
-                      Icons.refresh,
-                      color: AppColors.navyPrimary,
-                    ),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: _loadData,
+                        tooltip: 'Muat ulang',
+                        icon: const Icon(
+                          Icons.refresh,
+                          color: AppColors.navyPrimary,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _logout,
+                        tooltip: 'Keluar / Logout',
+                        icon: Icon(Icons.logout, color: Colors.red.shade700),
+                      ),
+                    ],
                   ),
                 ],
               ),
