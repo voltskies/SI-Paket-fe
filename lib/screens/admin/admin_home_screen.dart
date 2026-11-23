@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../role_selection_screen.dart';
+import 'admin_paket_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -26,7 +27,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   String? _selectedResiForAction;
   int? _selectedKurirId;
-  String _selectedTransit = 'DC Surabaya';
   String _searchQuery = '';
   String _adminNama = 'Admin Pos';
 
@@ -35,8 +35,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     super.initState();
     _loadData();
   }
-
-  
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
@@ -59,8 +57,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         _daftarKurir = kurirList;
 
         if (_daftarPaket.isNotEmpty) {
-          final validResi = _daftarPaket
-              .any((p) => p['noResi']?.toString() == _selectedResiForAction);
+          final validResi = _daftarPaket.any(
+            (p) => p['noResi']?.toString() == _selectedResiForAction,
+          );
           if (!validResi) {
             _selectedResiForAction = _daftarPaket.first['noResi']?.toString();
           }
@@ -69,12 +68,15 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         }
 
         if (_daftarKurir.isNotEmpty) {
-          final validKurir = _daftarKurir.any((k) =>
-              int.tryParse(k['idPengguna']?.toString() ?? '') ==
-              _selectedKurirId);
+          final validKurir = _daftarKurir.any(
+            (k) =>
+                int.tryParse(k['idPengguna']?.toString() ?? '') ==
+                _selectedKurirId,
+          );
           if (!validKurir) {
             _selectedKurirId = int.tryParse(
-                _daftarKurir.first['idPengguna']?.toString() ?? '');
+              _daftarKurir.first['idPengguna']?.toString() ?? '',
+            );
           }
         } else {
           _selectedKurirId = null;
@@ -104,35 +106,38 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Future<void> _simpanPaketBaru() async {
-  final idPelanggan = int.tryParse(_idPelangganController.text.trim());
-  if (idPelanggan == null ||
-      _namaController.text.trim().isEmpty ||
-      _alamatController.text.trim().isEmpty) {
-    _showSnack('Isi ID pelanggan, nama penerima, dan alamat tujuan dulu!', isError: true);
-    return;
-  }
+    final idPelanggan = int.tryParse(_idPelangganController.text.trim());
+    if (idPelanggan == null ||
+        _namaController.text.trim().isEmpty ||
+        _alamatController.text.trim().isEmpty) {
+      _showSnack(
+        'Isi ID pelanggan, nama penerima, dan alamat tujuan dulu!',
+        isError: true,
+      );
+      return;
+    }
 
-  setState(() => _isSubmitting = true);
-  try {
-    await ApiService.buatPaketGudang(
-      idPengguna: idPelanggan,
-      namaPenerima: _namaController.text.trim(),
-      alamatAsal: 'DC Surabaya',
-      alamatTujuan: _alamatController.text.trim(),
-      beratKg: _beratVal,
-      jenisPaket: _isExpress ? 'Express' : 'Reguler',
-    );
+    setState(() => _isSubmitting = true);
+    try {
+      await ApiService.buatPaketGudang(
+        idPengguna: idPelanggan,
+        namaPenerima: _namaController.text.trim(),
+        alamatAsal: 'DC Surabaya',
+        alamatTujuan: _alamatController.text.trim(),
+        beratKg: _beratVal,
+        jenisPaket: _isExpress ? 'Express' : 'Reguler',
+      );
 
-    _namaController.clear();
-    _alamatController.clear();
-    _showSnack('Paket baru & resi berhasil disimpan ke database!');
-    await _loadData();
-  } catch (e) {
-    _showSnack(e.toString().replaceFirst('Exception: ', ''), isError: true);
-  } finally {
-    if (mounted) setState(() => _isSubmitting = false);
+      _namaController.clear();
+      _alamatController.clear();
+      _showSnack('Paket baru & resi berhasil disimpan ke database!');
+      await _loadData();
+    } catch (e) {
+      _showSnack(e.toString().replaceFirst('Exception: ', ''), isError: true);
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
-}
 
   Future<void> _tugaskanKurir() async {
     if (_selectedResiForAction == null || _selectedKurirId == null) {
@@ -147,27 +152,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         idKurir: _selectedKurirId!,
       );
       _showSnack('Kurir berhasil ditugaskan untuk $_selectedResiForAction!');
-      await _loadData();
-    } catch (e) {
-      _showSnack(e.toString().replaceFirst('Exception: ', ''), isError: true);
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  Future<void> _simpanTitikTransit() async {
-    if (_selectedResiForAction == null) {
-      _showSnack('Belum ada paket yang dipilih.', isError: true);
-      return;
-    }
-
-    setState(() => _isSubmitting = true);
-    try {
-      await ApiService.tambahTransit(
-        noResi: _selectedResiForAction!,
-        lokasiUpdate: _selectedTransit,
-      );
-      _showSnack('Titik transit $_selectedTransit berhasil ditambahkan!');
       await _loadData();
     } catch (e) {
       _showSnack(e.toString().replaceFirst('Exception: ', ''), isError: true);
@@ -220,46 +204,47 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         unselectedItemColor: AppColors.textMuted,
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined), label: 'Beranda'),
+            icon: Icon(Icons.home_outlined),
+            label: 'Beranda',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.inventory_2_outlined), label: 'Paket'),
+            icon: Icon(Icons.inventory_2_outlined),
+            label: 'Paket',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.local_shipping_outlined), label: 'Kurir'),
+            icon: Icon(Icons.local_shipping_outlined),
+            label: 'Kurir',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline), label: 'Akun'),
+            icon: Icon(Icons.person_outline),
+            label: 'Akun',
+          ),
         ],
       ),
     );
   }
 
   Widget _buildBodyByTab(
-      List<Map<String, dynamic>> filteredPaket, int menungguCount) {
+    List<Map<String, dynamic>> filteredPaket,
+    int menungguCount,
+  ) {
     switch (_selectedNavIndex) {
       case 1:
-        return ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            const Text('Semua Daftar Paket',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 4),
-            Text('Total ${_daftarPaket.length} paket di database',
-                style: const TextStyle(
-                    fontSize: 13, color: AppColors.textSecondary)),
-            const SizedBox(height: 16),
-            ..._daftarPaket.map((p) => _AdminPaketCard(paket: p)),
-          ],
-        );
+        return const AdminPaketScreen();
       case 2:
         return ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            const Text('Daftar Kurir',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+            const Text(
+              'Daftar Kurir',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+            ),
             const SizedBox(height: 16),
             if (_daftarKurir.isEmpty)
               const Text('Belum ada data kurir terdaftar.'),
             ..._daftarKurir.map((k) {
-              final tersedia = k['statusKetersediaan'] == true ||
+              final tersedia =
+                  k['statusKetersediaan'] == true ||
                   k['statusKetersediaan'] == 1;
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -277,18 +262,24 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         Text(
                           (k['namaLengkap'] ?? 'Kurir').toString(),
                           style: const TextStyle(
-                              fontWeight: FontWeight.w800, fontSize: 15),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
                         ),
                         Text(
                           (k['platKendaraan'] ?? '-').toString(),
                           style: const TextStyle(
-                              color: AppColors.textSecondary, fontSize: 12),
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: tersedia
                             ? AppColors.badgeGreenBg
@@ -318,8 +309,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Akun Petugas Gudang',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+              const Text(
+                'Akun Petugas Gudang',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(18),
@@ -332,19 +325,29 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     const CircleAvatar(
                       radius: 26,
                       backgroundColor: AppColors.navyPrimary,
-                      child:
-                          Icon(Icons.warehouse, color: AppColors.yellowAccent),
+                      child: Icon(
+                        Icons.warehouse,
+                        color: AppColors.yellowAccent,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_adminNama,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w800, fontSize: 16)),
-                        const Text('Role: PetugasGudang',
-                            style: TextStyle(
-                                color: AppColors.textSecondary, fontSize: 13)),
+                        Text(
+                          _adminNama,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const Text(
+                          'Role: PetugasGudang',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -360,11 +363,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     backgroundColor: Colors.red.shade700,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   icon: const Icon(Icons.logout),
-                  label: const Text('Keluar / Logout',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
+                  label: const Text(
+                    'Keluar / Logout',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],
@@ -413,8 +419,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   ),
                   IconButton(
                     onPressed: _loadData,
-                    icon: const Icon(Icons.refresh,
-                        color: AppColors.navyPrimary),
+                    icon: const Icon(
+                      Icons.refresh,
+                      color: AppColors.navyPrimary,
+                    ),
                   ),
                 ],
               ),
@@ -450,10 +458,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           value: '${_daftarKurir.length}',
                           label: 'Kurir aktif',
                         ),
-                        _StatItem(
-                          value: '$menungguCount',
-                          label: 'Menunggu',
-                        ),
+                        _StatItem(value: '$menungguCount', label: 'Menunggu'),
                       ],
                     ),
                   ],
@@ -490,10 +495,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 onChanged: (v) => setState(() => _searchQuery = v),
                 decoration: InputDecoration(
                   hintText: 'Cari resi atau penerima',
-                  hintStyle:
-                      const TextStyle(fontSize: 14, color: AppColors.textMuted),
-                  prefixIcon:
-                      const Icon(Icons.search, color: AppColors.textSecondary),
+                  hintStyle: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textMuted,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: AppColors.textSecondary,
+                  ),
                   filled: true,
                   fillColor: AppColors.surfaceGray,
                   border: OutlineInputBorder(
@@ -508,8 +517,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               if (filteredPaket.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text('Belum ada paket ditemukan.',
-                      style: TextStyle(color: AppColors.textSecondary)),
+                  child: Text(
+                    'Belum ada paket ditemukan.',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 )
               else
                 ...filteredPaket
@@ -541,24 +552,39 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    const Text('ID Pelanggan (Pengirim)',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                    const Text(
+                      'ID Pelanggan (Pengirim)',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     _buildInputField(_idPelangganController, 'Contoh: 2'),
                     const SizedBox(height: 12),
                     const SizedBox(height: 16),
-                    const Text('Nama penerima',
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w700)),
+                    const Text(
+                      'Nama penerima',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     _buildInputField(_namaController, 'Nabila Putri'),
                     const SizedBox(height: 12),
-                    const Text('Alamat tujuan',
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w700)),
+                    const Text(
+                      'Alamat tujuan',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(height: 6),
-                    _buildInputField(_alamatController,
-                        'Jl. Keputih Tegal No. 18, Surabaya'),
+                    _buildInputField(
+                      _alamatController,
+                      'Jl. Keputih Tegal No. 18, Surabaya',
+                    ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -566,10 +592,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Berat paket (kg)',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700)),
+                              const Text(
+                                'Berat paket (kg)',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                               const SizedBox(height: 6),
                               TextField(
                                 controller: _beratController,
@@ -581,7 +610,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
-                                        color: AppColors.borderLight),
+                                      color: AppColors.borderLight,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -593,19 +623,24 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Layanan',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700)),
+                              const Text(
+                                'Layanan',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                               const SizedBox(height: 6),
                               Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: AppColors.borderLight),
+                                  border: Border.all(
+                                    color: AppColors.borderLight,
+                                  ),
                                 ),
                                 child: DropdownButtonHideUnderline(
                                   child: DropdownButton<bool>(
@@ -613,12 +648,17 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                     isExpanded: true,
                                     items: const [
                                       DropdownMenuItem(
-                                          value: false, child: Text('Reguler')),
+                                        value: false,
+                                        child: Text('Reguler'),
+                                      ),
                                       DropdownMenuItem(
-                                          value: true, child: Text('Express')),
+                                        value: true,
+                                        child: Text('Express'),
+                                      ),
                                     ],
                                     onChanged: (val) => setState(
-                                        () => _isExpress = val ?? false),
+                                      () => _isExpress = val ?? false,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -688,8 +728,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                               ),
                             ],
                           ),
-                          const Icon(Icons.check,
-                              color: AppColors.badgeGreenText),
+                          const Icon(
+                            Icons.check,
+                            color: AppColors.badgeGreenText,
+                          ),
                         ],
                       ),
                     ),
@@ -740,11 +782,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       value: _selectedResiForAction,
                       isExpanded: true,
                       items: _daftarPaket
-                          .map((p) => DropdownMenuItem<String>(
-                                value: p['noResi'].toString(),
-                                child: Text(
-                                    '${p['noResi']} · ${p['namaPenerima']}'),
-                              ))
+                          .map(
+                            (p) => DropdownMenuItem<String>(
+                              value: p['noResi'].toString(),
+                              child: Text(
+                                '${p['noResi']} · ${p['namaPenerima']}',
+                              ),
+                            ),
+                          )
                           .toList(),
                       onChanged: (v) =>
                           setState(() => _selectedResiForAction = v),
@@ -764,11 +809,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       value: _selectedKurirId,
                       isExpanded: true,
                       items: _daftarKurir
-                          .map((k) => DropdownMenuItem<int>(
-                                value: int.tryParse(k['idPengguna'].toString()),
-                                child: Text(
-                                    '${k['namaLengkap'] ?? 'Kurir'} (${k['platKendaraan'] ?? '-'})'),
-                              ))
+                          .map(
+                            (k) => DropdownMenuItem<int>(
+                              value: int.tryParse(k['idPengguna'].toString()),
+                              child: Text(
+                                '${k['namaLengkap'] ?? 'Kurir'} (${k['platKendaraan'] ?? '-'})',
+                              ),
+                            ),
+                          )
                           .toList(),
                       onChanged: (v) => setState(() => _selectedKurirId = v),
                     ),
@@ -788,58 +836,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.arrow_forward, size: 18),
-                  label: const Text('Tugaskan Kurir',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceGray,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Tambah titik riwayat',
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      children: ['DC Cakung', 'DC Semarang', 'DC Surabaya']
-                          .map((dc) => ChoiceChip(
-                                label: Text(dc,
-                                    style: const TextStyle(fontSize: 12)),
-                                selected: _selectedTransit == dc,
-                                onSelected: (_) =>
-                                    setState(() => _selectedTransit = dc),
-                              ))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 46,
-                      child: ElevatedButton.icon(
-                        onPressed: _isSubmitting ? null : _simpanTitikTransit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.navyPrimary,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        icon: const Icon(Icons.arrow_forward, size: 18),
-                        label: const Text('Simpan Titik Transit',
-                            style: TextStyle(fontWeight: FontWeight.w700)),
-                      ),
-                    ),
-                  ],
+                  label: const Text(
+                    'Tugaskan Kurir',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],
@@ -864,8 +864,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.borderLight),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
       ),
     );
   }
@@ -904,9 +906,10 @@ class _AdminPaketCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status =
-        (paket['statusTerkini'] ?? 'Menunggu Penjemputan').toString();
-    final isPerjalanan = status.toLowerCase().contains('perjalanan') ||
+    final status = (paket['statusTerkini'] ?? 'Menunggu Penjemputan')
+        .toString();
+    final isPerjalanan =
+        status.toLowerCase().contains('perjalanan') ||
         status.toLowerCase().contains('antar');
 
     return Container(
@@ -921,8 +924,11 @@ class _AdminPaketCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.inventory_2_outlined,
-                  size: 16, color: AppColors.navyPrimary),
+              const Icon(
+                Icons.inventory_2_outlined,
+                size: 16,
+                color: AppColors.navyPrimary,
+              ),
               const SizedBox(width: 6),
               Text(
                 (paket['noResi'] ?? '-').toString(),
@@ -953,16 +959,19 @@ class _AdminPaketCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                      fontSize: 12, color: AppColors.textSecondary),
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               Text(
                 (paket['jenisPaket'] ?? 'Reguler').toString(),
                 style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
